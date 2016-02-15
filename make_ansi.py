@@ -43,7 +43,7 @@ def find_closest(x, pallette):
     return min(pallette.keys(), key=key)
 
 def make_ansi_style(pallette):
-    style = {}
+    style = {'NO_COLOR': '0'}
     for name, t in BASE_COLORS.items():
         closest = find_closest(t, pallette)
         if len(closest) == 3:
@@ -69,7 +69,10 @@ def make_pallete(strings):
 def usname(name):
     return name.replace('-', '_').upper()
 
-for name in get_all_styles():
+
+style_names = sorted(get_all_styles())
+
+for name in style_names:
     if name == 'default':
         continue
     pstyle = get_style_by_name(name)
@@ -79,6 +82,6 @@ for name in get_all_styles():
     print(out)
 
 print('styles = {')
-for name in sorted(get_all_styles()):
+for name in style_names:
     print("    '"+name+"': " +usname(name) + '_STYLE,')
 print('}')
