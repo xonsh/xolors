@@ -3,7 +3,7 @@ import re
 import math
 from pprint import pprint, pformat
 from colortrans import rgb2short
-from from pygments.styles import get_style_by_name, get_all_styles
+from pygments.styles import get_style_by_name, get_all_styles
 
 BASE_COLORS = {
     'BLACK': (0, 0, 0),
@@ -13,7 +13,7 @@ BASE_COLORS = {
     'BLUE': (0, 0, 170),
     'PURPLE': (170, 0, 170),
     'CYAN': (0, 170, 170),
-    'WHITE' (170, 170, 170),
+    'WHITE': (170, 170, 170),
     'INTENSE_BLACK': (85, 85, 85),
     'INTENSE_RED': (255, 85, 85),
     'INTENSE_GREEN': (85, 255, 85),
@@ -25,10 +25,14 @@ BASE_COLORS = {
 }
 
 
-RE_RGB = re.compile(r'(..)(..)(..)')
+RE_RGB3 = re.compile(r'(.)(.)(.)')
+RE_RGB6 = re.compile(r'(..)(..)(..)')
 
 def rgb2ints(rgb):
-    return tuple([int(h, 16) for h in RE_RGB.split(rgb)[1:4]])
+    if len(rgb) == 6:
+        return tuple([int(h, 16) for h in RE_RGB6.split(rgb)[1:4]])
+    else:
+        return tuple([int(h*2, 16) for h in RE_RGB3.split(rgb)[1:4]])
 
 def dist(x, y):
     return math.sqrt((x[0]-y[0])**2 + (x[1]-y[1])**2 + (x[2]-y[2])**2)
@@ -42,7 +46,9 @@ def make_ansi_style(pallette):
     style = {}
     for name, t in BASE_COLORS.items():
         closest = find_closest(t, pallette)
-        short = rgb2short(closest)
+        if len(closest) == 3:
+            closest = ''.join([a*2 for a in closest])
+        short = rgb2short(closest)[0]
         style[name] = '38;5;' + short
         style['BOLD_'+name] = '1;38;5;' + short
         style['UNDERLINE_'+name] = '4;38;5;' + short
@@ -56,21 +62,23 @@ def make_pallete(strings):
     for s in strings:
         while '#' in s:
             _, t = s.split('#', 1)
-            pallette[t[:6]] = rgb2ints(t[:6])
-            s = t[6:]
+            t, _, s = t.partition(' ')
+            pallette[t] = rgb2ints(t)
     return pallette
 
+def usname(name):
+    return name.replace('-', '_').upper()
 
 for name in get_all_styles():
     if name == 'default':
         continue
-    pstyle = get_style_by_name()
+    pstyle = get_style_by_name(name)
     pallette = make_pallete(pstyle.styles.values())
     astyle = make_ansi_style(pallette)
-    out = name.upper() + '_STYLE = ' + pformat(astyle, indent=4) + '\n'
+    out = usname(name) + '_STYLE = {\n ' + pformat(astyle, indent=4)[1:-1] + ',\n}\n'
     print(out)
 
 print('styles = {')
-for name in get_all_styles():
-    print("    '"+name+"': " +name.upper() + '_STYLE,')
+for name in sorted(get_all_styles()):
+    print("    '"+name+"': " +usname(name) + '_STYLE,')
 print('}')
