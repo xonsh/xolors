@@ -40,7 +40,7 @@ def dist(x, y):
 
 def find_closest(x, pallette):
     key = lambda k: dist(x, pallette[k])
-    return min(pallette.keys(), key=key)
+    return min(sorted(pallette.keys())[::-1], key=key)
 
 def make_ansi_style(pallette):
     style = {'NO_COLOR': '0'}
@@ -81,7 +81,7 @@ for name in style_names:
     out = usname(name) + '_STYLE = {\n ' + pformat(astyle, indent=4)[1:-1] + ',\n}\n'
     print(out)
 
-print('styles = {')
+print('STYLES = {')
 for name in style_names:
     print("    '"+name+"': " +usname(name) + '_STYLE,')
 print('}')

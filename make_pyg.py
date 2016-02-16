@@ -41,9 +41,9 @@ def dist(x, y):
 
 def find_closest(x, pallette):
     key = lambda k: dist(x, pallette[k])
-    return min(pallette.keys(), key=key)
+    return min(sorted(pallette.keys())[::-1], key=key)
 
-def make_ansi_style(pallette):
+def make_pygments_style(pallette):
     style = {'NO_COLOR': 'noinherit'}
     for name, t in BASE_COLORS.items():
         color = find_closest(t, pallette)
@@ -73,14 +73,14 @@ style_names = sorted(get_all_styles())
 for name in style_names:
     pstyle = get_style_by_name(name)
     pallette = make_pallete(pstyle.styles.values())
-    astyle = make_ansi_style(pallette)
+    astyle = make_pygments_style(pallette)
     out = usname(name) + '_STYLE = {\n'
     for cname, color in sorted(astyle.items()):
         out += '    Color.{0}: {1!r},\n'.format(cname, color)
     out += '}\n'
     print(out)
 
-print('styles = {')
+print('STYLES = {')
 for name in style_names:
     print("    '"+name+"': " +usname(name) + '_STYLE,')
 print('}')
